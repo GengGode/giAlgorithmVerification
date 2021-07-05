@@ -28,35 +28,94 @@ double dis2(double a, double b)
 	return a * a + b * b;
 }
 
-Mat Cv::calMask(int col, int row, double r, int flag)
+Mat SharRectMat(Mat in,double r, int mode)
 {
-	Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
+	//Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
+	Rect roi;
+	Mat ReRoi;
+	int len;
 
-	Rect roi = Rect(0, 0, r, r);
-	//Mat ReRoi = out(roi);
-	int len = min(roi.width, roi.height);
-	for (int i = roi.x; i < roi.x + roi.width; i++)
+	roi = Rect(0, 0, cvRound(r), cvRound(r));
+	ReRoi = in(roi);
+	len = min(roi.width, roi.height);
+	for (int i = 0; i < ReRoi.cols; i++)
 	{
-		for (int j = roi.y; j < roi.y + roi.height; j++)
+		for (int j = 0; j < ReRoi.rows; j++)
 		{
-			double dis = sqrt(dis2(roi.x + roi.width - i, roi.y + roi.height - j));
+			double dis = sqrt(dis2(ReRoi.cols - i, ReRoi.rows - j));
+
 			if (dis > len)
 			{
-				out.at<uchar>(i, j) = 0;
+				ReRoi.at<uchar>(j, i) = 0;
 			}
-			else if(dis > len -r)
+			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) =  255.0/(r)*( len-dis);
+				ReRoi.at<uchar>(j, i) = 255.0 / (r)*(len - dis);
 			}
 			else
 			{
-				out.at<uchar>(i, j) = 255;
+				ReRoi.at<uchar>(j, i) = 255;
+			}
+		}
+	}
+	return in;
+}
+
+Mat Cv::calMask(int col, int row, double r, int flag)
+{
+	Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
+	Rect roi;
+	Mat ReRoi;
+	int len;
+
+	roi = Rect(0, 0, cvRound(r), cvRound(r));
+	ReRoi = out(roi);
+	len = min(roi.width, roi.height);
+	for (int i = 0; i < ReRoi.cols; i++)
+	{
+		for (int j = 0; j < ReRoi.rows; j++)
+		{
+			double dis = sqrt(dis2(ReRoi.cols - i, ReRoi.rows - j));
+			if (dis > len)
+			{
+				ReRoi.at<uchar>(j, i) = 0;
+			}
+			else if(dis > len -r)
+			{
+				ReRoi.at<uchar>(j, i) =  255.0/(r)*( len-dis);
+			}
+			else
+			{
+				ReRoi.at<uchar>(j, i) = 255;
 			}
 		}
 	}
 
-	 roi = Rect(0, r, r * 2, col - r * 2);
-	 len = min(roi.width, roi.height);
+	//roi = Rect(cvRound(r), 0, col- cvRound(r*2) , cvRound(r));
+	//ReRoi = out(roi);
+	//len = min(roi.width, roi.height);
+	//for (int i = 0; i < ReRoi.rows; i++)
+	//{
+	//	for (int j = 0; j < ReRoi.cols; j++)
+	//	{
+	//		double dis = sqrt(dis2(ReRoi.cols - i, ReRoi.rows - j));
+	//		if (dis > len)
+	//		{
+	//			ReRoi.at<uchar>(i, j) = 0;
+	//		}
+	//		else if (dis > len - r)
+	//		{
+	//			ReRoi.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+	//		}
+	//		else
+	//		{
+	//			ReRoi.at<uchar>(i, j) = 255;
+	//		}
+	//	}
+	//}
+
+	roi = Rect(0, r, r * 2, col - r * 2);
+	len = min(roi.width, roi.height);
 	for (int i = roi.x; i < roi.x + roi.width; i++)
 	{
 		for (int j = roi.y; j < roi.y + roi.height; j++)
@@ -95,6 +154,29 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 			else
 			{
 				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(0, 0, cvRound(r), cvRound(r));
+	ReRoi = out(roi);
+	len = min(roi.width, roi.height);
+	for (int i = 0; i < ReRoi.cols; i++)
+	{
+		for (int j = 0; j < ReRoi.rows; j++)
+		{
+			double dis = sqrt(dis2(ReRoi.cols - i, ReRoi.rows - j));
+			if (dis > len)
+			{
+				ReRoi.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				ReRoi.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				ReRoi.at<uchar>(i, j) = 255;
 			}
 		}
 	}
