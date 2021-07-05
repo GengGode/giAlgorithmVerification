@@ -23,6 +23,8 @@ protected:
 
 private:
 	Mat calMask(int col, int row, double r, int flag = 0);
+	Mat calMask2(int col, int row, int r, double r0, int flag = 0);
+	Mat calMask3(int col, int row, int r, double r0, int flag = 0);
 private slots:
 	void a10();
 	void a20();

@@ -60,61 +60,137 @@ Mat SharRectMat(Mat in,double r, int mode)
 	}
 	return in;
 }
-
-Mat Cv::calMask(int col, int row, double r, int flag)
+Mat Cv::calMask3(int col, int row, int r, double r0, int flag)
 {
 	Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
 	Rect roi;
 	Mat ReRoi;
 	int len;
 
-	roi = Rect(0, 0, cvRound(r), cvRound(r));
+	r0 = cvCeil(min(col, row) / 2);
+
+	roi = Rect(0, 0, cvRound(r0), cvRound( r0));
 	ReRoi = out(roi);
 	len = min(roi.width, roi.height);
-	for (int i = 0; i < ReRoi.cols; i++)
+	for (int i = roi.x; i < roi.x + roi.width; i++)
 	{
-		for (int j = 0; j < ReRoi.rows; j++)
+		for (int j = roi.y; j < roi.y + roi.height; j++)
 		{
-			double dis = sqrt(dis2(ReRoi.cols - i, ReRoi.rows - j));
+			double dis = sqrt(dis2(roi.x + roi.width - i, roi.y + roi.height - j));
 			if (dis > len)
 			{
-				ReRoi.at<uchar>(j, i) = 0;
+				out.at<uchar>(i, j) = 0;
 			}
-			else if(dis > len -r)
+			else if (dis > len - r)
 			{
-				ReRoi.at<uchar>(j, i) =  255.0/(r)*( len-dis);
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
 			}
 			else
 			{
-				ReRoi.at<uchar>(j, i) = 255;
+				out.at<uchar>(i, j) = 255;
 			}
 		}
 	}
 
-	//roi = Rect(cvRound(r), 0, col- cvRound(r*2) , cvRound(r));
-	//ReRoi = out(roi);
-	//len = min(roi.width, roi.height);
-	//for (int i = 0; i < ReRoi.rows; i++)
-	//{
-	//	for (int j = 0; j < ReRoi.cols; j++)
-	//	{
-	//		double dis = sqrt(dis2(ReRoi.cols - i, ReRoi.rows - j));
-	//		if (dis > len)
-	//		{
-	//			ReRoi.at<uchar>(i, j) = 0;
-	//		}
-	//		else if (dis > len - r)
-	//		{
-	//			ReRoi.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
-	//		}
-	//		else
-	//		{
-	//			ReRoi.at<uchar>(i, j) = 255;
-	//		}
-	//	}
-	//}
+	roi = Rect(0, col - cvRound(r0), cvRound(r0), cvRound(r0));
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - i, roi.y + roi.height - (r + r0) - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+	roi = Rect(row - cvRound(r0), 0, cvRound(r0), cvRound(r0));
+	ReRoi = out(roi);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - (r + r0) - i, roi.y + roi.height - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
 
-	roi = Rect(0, r, r * 2, col - r * 2);
+	roi = Rect(row - cvRound(r0), col - cvRound(r0), cvRound(r0), cvRound(r0));
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - (r + r0) - i, roi.y + roi.height - (r + r0) - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+	return out;
+}
+
+Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
+{
+	Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
+	Rect roi;
+	Mat ReRoi;
+	int len;
+
+	roi = Rect(0, 0, cvRound(r + r0), cvRound(r + r0));
+	ReRoi = out(roi);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - i, roi.y + roi.height - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(0, (r + r0), (r + r0), col - (r + r0) * 2);
 	len = min(roi.width, roi.height);
 	for (int i = roi.x; i < roi.x + roi.width; i++)
 	{
@@ -136,13 +212,13 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 		}
 	}
 
-	roi = Rect(0, col-r, r, r);
+	roi = Rect(0, col - (r + r0), (r + r0), (r + r0));
 	len = min(roi.width, roi.height);
 	for (int i = roi.x; i < roi.x + roi.width; i++)
 	{
 		for (int j = roi.y; j < roi.y + roi.height; j++)
 		{
-			double dis = sqrt(dis2(roi.x + roi.width - i, roi.y + roi.height-r  - j));
+			double dis = sqrt(dis2(roi.x + roi.width - i, roi.y + roi.height - (r + r0) - j));
 			if (dis > len)
 			{
 				out.at<uchar>(i, j) = 0;
@@ -158,25 +234,300 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 		}
 	}
 
-	roi = Rect(0, 0, cvRound(r), cvRound(r));
-	ReRoi = out(roi);
+	roi = Rect((r + r0), 0, row - (r + r0) * 2, (r + r0));
 	len = min(roi.width, roi.height);
-	for (int i = 0; i < ReRoi.cols; i++)
+	for (int i = roi.x; i < roi.x + roi.width; i++)
 	{
-		for (int j = 0; j < ReRoi.rows; j++)
+		for (int j = roi.y; j < roi.y + roi.height; j++)
 		{
-			double dis = sqrt(dis2(ReRoi.cols - i, ReRoi.rows - j));
+			double dis = sqrt(dis2(0, roi.y + roi.height - j));
 			if (dis > len)
 			{
-				ReRoi.at<uchar>(i, j) = 0;
+				out.at<uchar>(i, j) = 0;
 			}
 			else if (dis > len - r)
 			{
-				ReRoi.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
 			}
 			else
 			{
-				ReRoi.at<uchar>(i, j) = 255;
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect((r + r0), col - (r + r0), row - (r + r0) * 2, (r + r0));
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(0, roi.y + roi.height - (r + r0) - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(row - (r + r0), 0, cvRound(r + r0), cvRound(r + r0));
+	ReRoi = out(roi);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - (r + r0) - i, roi.y + roi.height - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(row - (r + r0), (r + r0), (r + r0), col - (r + r0) * 2);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - (r + r0) - i, 0));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(row - (r + r0), col - (r + r0), (r + r0), (r + r0));
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - (r + r0) - i, roi.y + roi.height - (r + r0) - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+	return out;
+}
+
+Mat Cv::calMask(int col, int row, double r, int flag)
+{
+	Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
+	Rect roi;
+	Mat ReRoi;
+	int len;
+
+	roi = Rect(0, 0, cvRound(r), cvRound(r));
+	ReRoi = out(roi);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - i, roi.y + roi.height - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(0, r, r, col - r * 2);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - i, 0));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(0, col - r, r, r);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - i, roi.y + roi.height - r - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(r, 0, row-r * 2, r);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(0, roi.y + roi.height - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(r, col - r, row - r * 2,  r);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(0, roi.y + roi.height - r - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(row-r, 0, cvRound(r), cvRound(r));
+	ReRoi = out(roi);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - r - i, roi.y + roi.height - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(row-r, r, r, col - r * 2);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width - r - i, 0));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
+			}
+		}
+	}
+
+	roi = Rect(row-r, col - r, r, r);
+	len = min(roi.width, roi.height);
+	for (int i = roi.x; i < roi.x + roi.width; i++)
+	{
+		for (int j = roi.y; j < roi.y + roi.height; j++)
+		{
+			double dis = sqrt(dis2(roi.x + roi.width -r- i, roi.y + roi.height - r - j));
+			if (dis > len)
+			{
+				out.at<uchar>(i, j) = 0;
+			}
+			else if (dis > len - r)
+			{
+				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+			}
+			else
+			{
+				out.at<uchar>(i, j) = 255;
 			}
 		}
 	}
@@ -185,22 +536,6 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 
 
 void Cv::a10()
-{
-	Mat MAINMASK = imread("C:/Users/GengG/source/repos/GenshinImpact_AutoMap/GenshinImpact_AutoMap/resource/BackGroundMask.bmp");
-	
-	std::vector<Mat> mv0;
-	std::vector<Mat> mv1;
-	//Õ®µ¿∑÷¿Î
-	split(MainMat, mv0);
-	split(MAINMASK, mv1);
-	mv0.push_back(mv1[0]);
-	merge(mv0, MainMat);
-	MainImg = QImage((uchar*)(MainMat.data), MainMat.cols, MainMat.rows, MainMat.cols*(MainMat.channels()), QImage::Format_RGBA8888);
-	isE = true;
-	update();
-}
-
-void Cv::a20()
 {
 	MainMat = imread("C:/Users/GengG/source/repos/Cv≤‚ ‘/Cv≤‚ ‘/res/mat.png");
 
@@ -222,7 +557,47 @@ void Cv::a20()
 	update();
 }
 
+void Cv::a20()
+{
+	MainMat = imread("C:/Users/GengG/source/repos/Cv≤‚ ‘/Cv≤‚ ‘/res/mat.png");
+
+	Mat MAINMASK = calMask2(MainMat.cols, MainMat.rows, 20, 50);
+
+	std::vector<Mat> mv0;
+	std::vector<Mat> mv1;
+
+	mv0.clear();
+	mv1.clear();
+
+	//Õ®µ¿∑÷¿Î
+	split(MainMat, mv0);
+	split(MAINMASK, mv1);
+	mv0.push_back(mv1[0]);
+	merge(mv0, MainMat);
+	MainImg = QImage((uchar*)(MainMat.data), MainMat.cols, MainMat.rows, MainMat.cols*(MainMat.channels()), QImage::Format_ARGB32);
+	isE = true;
+	update();
+}
+
 void Cv::a30()
 {
+	MainMat = imread("C:/Users/GengG/source/repos/Cv≤‚ ‘/Cv≤‚ ‘/res/mat.png");
+
+	Mat MAINMASK = calMask3(MainMat.cols, MainMat.rows, 20, 3);
+
+	std::vector<Mat> mv0;
+	std::vector<Mat> mv1;
+
+	mv0.clear();
+	mv1.clear();
+
+	//Õ®µ¿∑÷¿Î
+	split(MainMat, mv0);
+	split(MAINMASK, mv1);
+	mv0.push_back(mv1[0]);
+	merge(mv0, MainMat);
+	MainImg = QImage((uchar*)(MainMat.data), MainMat.cols, MainMat.rows, MainMat.cols*(MainMat.channels()), QImage::Format_ARGB32);
+	isE = true;
+	update();
 }
 
