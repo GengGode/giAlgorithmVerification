@@ -5,17 +5,31 @@ VisualStudioVersion = 15.0.28307.1525
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Cv测试", "Cv测试\Cv测试.vcxproj", "{5ADBA02C-B4EE-4AAF-8003-73E6246FEB90}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpencvConsole", "OpencvConsole\OpencvConsole.vcxproj", "{FC66A4C5-7241-4969-B9D8-5812061520E9}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
 		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{5ADBA02C-B4EE-4AAF-8003-73E6246FEB90}.Debug|x64.ActiveCfg = Debug|x64
 		{5ADBA02C-B4EE-4AAF-8003-73E6246FEB90}.Debug|x64.Build.0 = Debug|x64
+		{5ADBA02C-B4EE-4AAF-8003-73E6246FEB90}.Debug|x86.ActiveCfg = Debug|x64
 		{5ADBA02C-B4EE-4AAF-8003-73E6246FEB90}.Release|x64.ActiveCfg = Release|x64
 		{5ADBA02C-B4EE-4AAF-8003-73E6246FEB90}.Release|x64.Build.0 = Release|x64
 		{5ADBA02C-B4EE-4AAF-8003-73E6246FEB90}.Release|x64.Deploy.0 = Release|x64
+		{5ADBA02C-B4EE-4AAF-8003-73E6246FEB90}.Release|x86.ActiveCfg = Release|x64
+		{FC66A4C5-7241-4969-B9D8-5812061520E9}.Debug|x64.ActiveCfg = Debug|x64
+		{FC66A4C5-7241-4969-B9D8-5812061520E9}.Debug|x64.Build.0 = Debug|x64
+		{FC66A4C5-7241-4969-B9D8-5812061520E9}.Debug|x86.ActiveCfg = Debug|Win32
+		{FC66A4C5-7241-4969-B9D8-5812061520E9}.Debug|x86.Build.0 = Debug|Win32
+		{FC66A4C5-7241-4969-B9D8-5812061520E9}.Release|x64.ActiveCfg = Release|x64
+		{FC66A4C5-7241-4969-B9D8-5812061520E9}.Release|x64.Build.0 = Release|x64
+		{FC66A4C5-7241-4969-B9D8-5812061520E9}.Release|x86.ActiveCfg = Release|Win32
+		{FC66A4C5-7241-4969-B9D8-5812061520E9}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

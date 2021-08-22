@@ -63,97 +63,24 @@ Mat SharRectMat(Mat in,double r, int mode)
 Mat Cv::calMask3(int col, int row, int r, double r0, int flag)
 {
 	Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
-	Rect roi;
-	Mat ReRoi;
-	int len;
 
-	r0 = cvCeil(min(col, row) / 2);
-
-	roi = Rect(0, 0, cvRound(r0), cvRound( r0));
-	ReRoi = out(roi);
-	len = min(roi.width, roi.height);
-	for (int i = roi.x; i < roi.x + roi.width; i++)
+	int len = min(cvRound(col*0.5), cvRound(row*0.5));
+	for (int i = 0; i < col; i++)
 	{
-		for (int j = roi.y; j < roi.y + roi.height; j++)
+		for (int j = 0; j < row; j++)
 		{
-			double dis = sqrt(dis2(roi.x + roi.width - i, roi.y + roi.height - j));
+			double dis = sqrt(dis2(cvRound(col*0.5) - i, cvRound(row*0.5) - j));
 			if (dis > len)
 			{
-				out.at<uchar>(i, j) = 0;
+				out.at<uchar>(j, i) = 0;
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(j, i) = 255.0 / (r)*(len - dis);
 			}
 			else
 			{
-				out.at<uchar>(i, j) = 255;
-			}
-		}
-	}
-
-	roi = Rect(0, col - cvRound(r0), cvRound(r0), cvRound(r0));
-	len = min(roi.width, roi.height);
-	for (int i = roi.x; i < roi.x + roi.width; i++)
-	{
-		for (int j = roi.y; j < roi.y + roi.height; j++)
-		{
-			double dis = sqrt(dis2(roi.x + roi.width - i, roi.y + roi.height - (r + r0) - j));
-			if (dis > len)
-			{
-				out.at<uchar>(i, j) = 0;
-			}
-			else if (dis > len - r)
-			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
-			}
-			else
-			{
-				out.at<uchar>(i, j) = 255;
-			}
-		}
-	}
-	roi = Rect(row - cvRound(r0), 0, cvRound(r0), cvRound(r0));
-	ReRoi = out(roi);
-	len = min(roi.width, roi.height);
-	for (int i = roi.x; i < roi.x + roi.width; i++)
-	{
-		for (int j = roi.y; j < roi.y + roi.height; j++)
-		{
-			double dis = sqrt(dis2(roi.x + roi.width - (r + r0) - i, roi.y + roi.height - j));
-			if (dis > len)
-			{
-				out.at<uchar>(i, j) = 0;
-			}
-			else if (dis > len - r)
-			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
-			}
-			else
-			{
-				out.at<uchar>(i, j) = 255;
-			}
-		}
-	}
-
-	roi = Rect(row - cvRound(r0), col - cvRound(r0), cvRound(r0), cvRound(r0));
-	len = min(roi.width, roi.height);
-	for (int i = roi.x; i < roi.x + roi.width; i++)
-	{
-		for (int j = roi.y; j < roi.y + roi.height; j++)
-		{
-			double dis = sqrt(dis2(roi.x + roi.width - (r + r0) - i, roi.y + roi.height - (r + r0) - j));
-			if (dis > len)
-			{
-				out.at<uchar>(i, j) = 0;
-			}
-			else if (dis > len - r)
-			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
-			}
-			else
-			{
-				out.at<uchar>(i, j) = 255;
+				out.at<uchar>(j, i) = 255;
 			}
 		}
 	}
