@@ -1,312 +1,235 @@
 ﻿// OpencvConsole.cpp : 此文件包含 "main" 函数。程序执行将在此处开始并结束。
 //
-#include "CodeTest.h"
+//#include "CodeTest.h"
 
+#include <Windows.h>
 #include <iostream>
 #include <opencv2/opencv.hpp>
 using namespace std;
 using namespace cv;
 
-int showNumber = 0;
+LPCWSTR giWindowName = { L"原神" };
+HWND giHandle;
+RECT giRect;
+RECT giClientRect;
 
-void show(Mat img)
+cv::Size giClientSize;
+cv::Mat giFrame;
+
+double screen_scale = 1.0;
+
+bool getGengshinImpactScale()
 {
-	string str = "Img" + to_string(showNumber);
-	namedWindow(str, WINDOW_FREERATIO);
-	imshow(str, img);
-	showNumber++;
+	HWND hWnd = GetDesktopWindow();
+	HMONITOR hMonitor = MonitorFromWindow(hWnd, MONITOR_DEFAULTTONEAREST);
+
+	// 获取监视器逻辑宽度与高度
+	MONITORINFOEX miex;
+	miex.cbSize = sizeof(miex);
+	GetMonitorInfo(hMonitor, &miex);
+	int cxLogical = (miex.rcMonitor.right - miex.rcMonitor.left);
+	int cyLogical = (miex.rcMonitor.bottom - miex.rcMonitor.top);
+
+	// 获取监视器物理宽度与高度
+	DEVMODE dm;
+	dm.dmSize = sizeof(dm);
+	dm.dmDriverExtra = 0;
+	EnumDisplaySettings(miex.szDevice, ENUM_CURRENT_SETTINGS, &dm);
+	int cxPhysical = dm.dmPelsWidth;
+	int cyPhysical = dm.dmPelsHeight;
+
+	screen_scale = static_cast<double>(cxPhysical) / static_cast<double>(cxLogical);
+
+	return true;
 }
 
-void unevenLightCompensate(Mat &image, int blockSize)
+bool getGengshinImpactScreen()
 {
-	if (image.channels() == 3) cvtColor(image, image, 7);
-	double average = mean(image)[0];
-	int rows_new = ceil(double(image.rows) / double(blockSize));
-	int cols_new = ceil(double(image.cols) / double(blockSize));
-	Mat blockImage;
-	blockImage = Mat::zeros(rows_new, cols_new, CV_32FC1);
-	for (int i = 0; i < rows_new; i++)
+	static HBITMAP	hBmp;
+	BITMAP bmp;
+
+	DeleteObject(hBmp);
+
+	if (giHandle == NULL)
 	{
-		for (int j = 0; j < cols_new; j++)
-		{
-			int rowmin = i * blockSize;
-			int rowmax = (i + 1)*blockSize;
-			if (rowmax > image.rows) rowmax = image.rows;
-			int colmin = j * blockSize;
-			int colmax = (j + 1)*blockSize;
-			if (colmax > image.cols) colmax = image.cols;
-			Mat imageROI = image(Range(rowmin, rowmax), Range(colmin, colmax));
-			double temaver = mean(imageROI)[0];
-			blockImage.at<float>(i, j) = temaver;
-		}
+		return false;
 	}
-	blockImage = blockImage - average;
-	Mat blockImage2;
-	resize(blockImage, blockImage2, image.size(), (0, 0), (0, 0), INTER_CUBIC);
-	Mat image2;
-	image.convertTo(image2, CV_32FC1);
-	Mat dst = image2 - blockImage2;
-	dst.convertTo(image, CV_8UC1);
-}
-//求区域内均值 integral即为积分图
-float fastMean(cv::Mat& integral, int x, int y, int window)
-{
-
-	int min_y = std::max(0, y - window / 2);
-	int max_y = std::min(integral.rows - 1, y + window / 2);
-	int min_x = std::max(0, x - window / 2);
-	int max_x = std::min(integral.cols - 1, x + window / 2);
-
-	int topright = integral.at<int>(max_y, max_x);
-	int botleft = integral.at<int>(min_y, min_x);
-	int topleft = integral.at<int>(max_y, min_x);
-	int botright = integral.at<int>(min_y, max_x);
-
-	float res = (float)((topright + botleft - topleft - botright) / (float)((max_y - min_y) *(max_x - min_x)));
-
-	return res;
-}
-
-
-cv::Mat& Sauvola(cv::Mat& inpImg, cv::Mat& resImg, int window, float k)
-{
-	cv::Mat integral;
-	int nYOffSet = 3;
-	int nXOffSet = 3;
-	cv::integral(inpImg, integral);  //计算积分图像
-	for (int y = 0; y < inpImg.rows; y += nYOffSet)
+	if (!IsWindow(giHandle))
 	{
-		for (int x = 0; x < inpImg.cols; x += nXOffSet)
-		{
-
-			float fmean = fastMean(integral, x, y, window); float fthreshold = (float)(fmean*(1.0 - k));
-
-			int nNextY = y + nYOffSet;
-			int nNextX = x + nXOffSet;
-			int nCurY = y;
-			while (nCurY < nNextY && nCurY < inpImg.rows)
-			{
-				int nCurX = x;
-				while (nCurX < nNextX && nCurX < inpImg.cols)
-				{
-					uchar val = inpImg.at<uchar>(nCurY, nCurX) < fthreshold;
-					resImg.at<uchar>(nCurY, nCurX) = (val == 0 ? 0 : 255);
-					nCurX++;
-				}
-				nCurY++;
-			}
-
-		}
+		return false;
 	}
 
-	return resImg;
-}
+	//获取目标句柄的窗口大小RECT
+	GetWindowRect(giHandle, &giRect);/* 对原神窗口的操作 */
 
-void test1(Mat &in, Mat &out)
-{
-	Mat src(in.size(), CV_32FC3);
-	for (int i = 0; i < in.rows; i++)
+	//获取目标句柄的DC
+	HDC hScreen = GetDC(giHandle);/* 对原神窗口的操作 */
+	HDC hCompDC = CreateCompatibleDC(hScreen);
+
+	//获取目标句柄的宽度和高度
+	int	nWidth = static_cast<int>((screen_scale) * (giRect.right - giRect.left));
+	int	nHeight = static_cast<int>((screen_scale) * (giRect.bottom - giRect.top));
+
+	//创建Bitmap对象
+	hBmp = CreateCompatibleBitmap(hScreen, nWidth, nHeight);//得到位图
+
+	SelectObject(hCompDC, hBmp); //不写就全黑
+	BitBlt(hCompDC, 0, 0, nWidth, nHeight, hScreen, 0, 0, SRCCOPY);
+
+	//释放对象
+	DeleteDC(hScreen);
+	DeleteDC(hCompDC);
+
+	//类型转换
+	//这里获取位图的大小信息,事实上也是兼容DC绘图输出的范围
+	GetObject(hBmp, sizeof(BITMAP), &bmp);
+
+	int nChannels = bmp.bmBitsPixel == 1 ? 1 : bmp.bmBitsPixel / 8;
+	int depth = bmp.bmBitsPixel == 1 ? 1 : 8;
+
+	//mat操作
+	giFrame.create(cv::Size(bmp.bmWidth, bmp.bmHeight), CV_MAKETYPE(CV_8U, nChannels));
+
+	GetBitmapBits(hBmp, bmp.bmHeight*bmp.bmWidth*nChannels, giFrame.data);
+
+	giFrame = giFrame(cv::Rect(giClientRect.left, giClientRect.top, giClientSize.width, giClientSize.height));
+
+	if (giFrame.empty())
 	{
-		for (int j = 0; j < in.cols; j++)
-		{
-			src.at<Vec3f>(i, j)[0] = 255 * (float)in.at<Vec3b>(i, j)[0] / ((float)in.at<Vec3b>(i, j)[0] + (float)in.at<Vec3b>(i, j)[2] + (float)in.at<Vec3b>(i, j)[1] + 0.01);
-			src.at<Vec3f>(i, j)[1] = 255 * (float)in.at<Vec3b>(i, j)[1] / ((float)in.at<Vec3b>(i, j)[0] + (float)in.at<Vec3b>(i, j)[2] + (float)in.at<Vec3b>(i, j)[1] + 0.01);
-			src.at<Vec3f>(i, j)[2] = 255 * (float)in.at<Vec3b>(i, j)[2] / ((float)in.at<Vec3b>(i, j)[0] + (float)in.at<Vec3b>(i, j)[2] + (float)in.at<Vec3b>(i, j)[1] + 0.01);
-		}
+		return false;
 	}
-
-	normalize(src, src, 0, 255,NORM_MINMAX);
-
-	convertScaleAbs(src, out);
-}
-
-void test2(Mat &in, Mat &out)
-{
-	Mat src(in.size(), CV_32FC3);
-	for (int i = 0; i < in.rows; i++)
-	{
-		for (int j = 0; j < in.cols; j++)
-		{
-			float k = min((float)in.at<Vec3b>(i, j)[0], min((float)in.at<Vec3b>(i, j)[2], (float)in.at<Vec3b>(i, j)[1]));
-			src.at<Vec3f>(i, j)[0] = k;
-			src.at<Vec3f>(i, j)[1] = k;
-			src.at<Vec3f>(i, j)[2] = k;
-		}
-	}
-
-	normalize(src, src, 0, 255, NORM_MINMAX);
-
-	convertScaleAbs(src, out);
-}
-
-Point asd(Mat image)
-{
-	Mat img, imgGray;
-	Mat img2, imgGraydst;
-	image.copyTo(img);
-	cvtColor(img, imgGray, 7);
-	threshold(imgGray, imgGraydst, 230, 255, THRESH_BINARY);
-
-	cv::Mat dilate_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10));
-	cv::dilate(imgGraydst, imgGraydst, dilate_element);
-	cv::Mat erode_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(8, 8));
-	cv::erode(imgGraydst, imgGraydst, erode_element);
-
-	imgGray = imgGray - imgGraydst;
-	cvtColor(imgGraydst, imgGraydst, COLOR_GRAY2RGB);
-	img = img - imgGraydst;
-	unevenLightCompensate(img, 2);
-
-
-	show(img);
-
-	Mat out = (imgGray - img) * 5;
-
-	threshold(out, out, 130, 255, THRESH_BINARY);
-
-	dilate_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
-	cv::dilate(out, out, dilate_element);
-	erode_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(20, 20));
-	cv::erode(out, out, erode_element);
-
-	std::vector<std::vector<cv::Point>> contours;
-	std::vector<cv::Vec4i> hierarcy;
-
-	cv::findContours(out, contours, hierarcy, 0, 1);
-
-	std::vector<cv::Rect> boundRect(contours.size());  //定义外接矩形集合
-	cv::Point2f rect[4];
-
-	std::vector<cv::Point2d> AvatarKeyPoint;
-	double AvatarKeyPointLine[3] = { 0 };
-	std::vector<cv::Point2f> AvatarKeyLine;
-	cv::Point2f KeyLine;
-
-	Point p;
-
-	for (int i = 0; i < contours.size(); i++)
-	{
-		boundRect[i] = cv::boundingRect(cv::Mat(contours[i]));
-		AvatarKeyPoint.push_back(cv::Point(cvRound(boundRect[i].x + boundRect[i].width / 2), cvRound(boundRect[i].y + boundRect[i].height / 2)));
-
-		p=Point(boundRect[i].x + boundRect[i].width / 2, boundRect[i].y + boundRect[i].height / 2);
-
-		circle(out, p, 3, Scalar(0));
-
-	}
-
-	show(out);
-
-	return p;
-
+	return true;
 }
 
 int main()
 {
-	Mat imgOri=imread("001.png");
+	giWindowName = L"\u539F\u795E";
+	giHandle = FindWindowW(L"UnityWndClass", giWindowName); /* 匹配名称：原神 */
 
-	namedWindow("Img", WINDOW_FREERATIO);
-	imshow("Img", imgOri);
-	
-	Mat img;
-	imgOri(Rect(30, 30,152, 152)).copyTo(img);
-	/*************************************/
-	img.copyTo(imgOri);
+	if (giHandle == NULL)
+	{
+		return 1;
+	}
 
-	Mat imgGray;
+	if (!GetWindowRect(giHandle, &giRect))
+	{
+		return 2;
+	}
 
-	cvtColor(img, imgGray, 7);
+	if (!GetClientRect(giHandle, &giClientRect))
+	{
+		return 3;
+	}
 
-	show(imgGray);
+	//获取屏幕缩放比例
+	getGengshinImpactScale();
 
-	double res;
-	
+	giClientSize.width = static_cast<int>(screen_scale * (giClientRect.right - giClientRect.left));
+	giClientSize.height = static_cast<int>(screen_scale * (giClientRect.bottom - giClientRect.top));
 
-	Mat img2, imgGraydst;
+	//namedWindow("Genshin R", WINDOW_FREERATIO);
+	//namedWindow("Genshin G", WINDOW_FREERATIO);
+	//namedWindow("Genshin B", WINDOW_FREERATIO);
+	//namedWindow("Genshin A", WINDOW_FREERATIO);
+	//namedWindow("Genshin Gray", WINDOW_FREERATIO);
 
-	cvtColor(img, imgGray, 7);
-	threshold(imgGray, imgGraydst, 230, 255, THRESH_BINARY);
-
-	cv::Mat dilate_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(10, 10));
-	cv::dilate(imgGraydst, imgGraydst, dilate_element);
-	cv::Mat erode_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(8, 8));
-	cv::erode(imgGraydst, imgGraydst, erode_element);
-
-	imgGray = imgGray - imgGraydst;
-	cvtColor(imgGraydst, imgGraydst, COLOR_GRAY2RGB);
-	img = img - imgGraydst;
-	unevenLightCompensate(img, 2);
-
-
-	show(img);
-
-	Mat out = (imgGray - img) * 5;
-
-	threshold(out, out, 130, 255, THRESH_BINARY);
-
-	dilate_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(5, 5));
-	cv::dilate(out, out, dilate_element);
-	erode_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(20, 20));
-	cv::erode(out, out, erode_element);
-
+	std::vector<cv::Mat> lis;
+	std::vector<cv::Mat> lisRectMat;
 	std::vector<std::vector<cv::Point>> contours;
 	std::vector<cv::Vec4i> hierarcy;
 
-	cv::findContours(out, contours, hierarcy, 0, 1);
-
-	std::vector<cv::Rect> boundRect(contours.size());  //定义外接矩形集合
-	cv::Point2f rect[4];
-
-	std::vector<cv::Point2d> AvatarKeyPoint;
-	double AvatarKeyPointLine[3] = { 0 };
-	std::vector<cv::Point2f> AvatarKeyLine;
-	cv::Point2f KeyLine;
-
-	Point p;
-
-	for (int i = 0; i < contours.size(); i++)
+	cv::Mat gray;
+	int i = 0;
+//#define b
+#ifdef b
+	while (getGengshinImpactScreen())
 	{
-		boundRect[i] = cv::boundingRect(cv::Mat(contours[i]));
-		AvatarKeyPoint.push_back(cv::Point(cvRound(boundRect[i].x + boundRect[i].width / 2), cvRound(boundRect[i].y + boundRect[i].height / 2)));
+#else
+	while (1)
+	{
+		giFrame = imread("img.png", -1);
+#endif
+#ifdef a
+		//giFrame = giFrame(Rect(static_cast<int>(giFrame.cols / 5.0*3.0), static_cast<int>(giFrame.rows / 4.0), static_cast<int>(giFrame.cols / 5.0), static_cast<int>(giFrame.rows / 2.0)));
+		giFrame = giFrame(Rect(static_cast<int>(giFrame.cols / 5.0*3.0), static_cast<int>(giFrame.rows / 4.0), static_cast<int>(giFrame.cols / 6.0), static_cast<int>(giFrame.rows/2.0)));
 
-		p = Point(boundRect[i].x + boundRect[i].width / 2, boundRect[i].y + boundRect[i].height / 2);
+		cv::split(giFrame, lis);
 
-		circle(out, p, 3, Scalar(0));
+		cv::threshold(lis[3], gray, 100, 255, cv::THRESH_BINARY);
 
+		//cv::Mat erode_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(6, 6));
+		//cv::erode(gray, gray, erode_element);
+		//cv::Mat dilate_element = cv::getStructuringElement(cv::MORPH_RECT, cv::Size(6, 6));
+		//cv::dilate(gray, gray, dilate_element);
+
+		cv::findContours(gray, contours, hierarcy, 0, 1); //CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+
+		std::vector<cv::Rect> boundRect(contours.size());  //定义外接矩形集合
+
+		lisRectMat.clear();
+
+
+		cvtColor(gray, gray, COLOR_GRAY2RGBA);
+
+		for (int i = 0; i < contours.size(); i++)
+		{
+			boundRect[i] = cv::boundingRect(cv::Mat(contours[i]));
+			if (boundRect[i].x > static_cast<int>(giFrame.cols / 2))
+			{
+				continue;
+			}
+			//lisRectMat.push_back(giFrame(Rect(boundRect[i].x, boundRect[i].y, boundRect[i].height, static_cast<int>(giFrame.cols*0.9 - boundRect[i].x))));
+			lisRectMat.push_back(giFrame(boundRect[i]));
+			lisRectMat[lisRectMat.size() - 1].copyTo(gray(boundRect[i]));
+		}
+
+		
+		//imshow("Genshin R", lis[0]);
+		//imshow("Genshin G", lis[1]);
+		//imshow("Genshin B", lis[2]);
+		imshow("Genshin", giFrame);
+		imshow("Genshin A", lis[3]);
+		imshow("Genshin Out", lis[3].mul(lis[2])/255.0);
+		imshow("Genshin Gray", gray);
+#else
+		giFrame = giFrame(Rect(static_cast<int>(giFrame.cols / 20.0), static_cast<int>(giFrame.rows / 2.0), static_cast<int>(giFrame.cols / 6.0), static_cast<int>(giFrame.rows / 4.0)));
+
+		cv::split(giFrame, lis);
+
+		cv::threshold(lis[3], gray, 36, 255, cv::THRESH_BINARY);
+
+#ifdef b
+		imwrite("im" + to_string(i++) + ".png", giFrame);
+#endif
+
+		cv::findContours(gray, contours, hierarcy, 0, 1); //CV_RETR_EXTERNAL, CV_CHAIN_APPROX_NONE);
+
+		std::vector<cv::Rect> boundRect(contours.size());  //定义外接矩形集合
+
+		lisRectMat.clear();
+
+
+		cvtColor(gray, gray, COLOR_GRAY2RGBA);
+
+		for (int i = 0; i < contours.size(); i++)
+		{
+			boundRect[i] = cv::boundingRect(cv::Mat(contours[i]));
+			if (boundRect[i].x > static_cast<int>(giFrame.cols / 2))
+			{
+				continue;
+			}
+			//lisRectMat.push_back(giFrame(Rect(boundRect[i].x, boundRect[i].y, boundRect[i].height, static_cast<int>(giFrame.cols*0.9 - boundRect[i].x))));
+			lisRectMat.push_back(giFrame(boundRect[i]));
+			lisRectMat[lisRectMat.size() - 1].copyTo(gray(boundRect[i]));
+		}
+
+		imshow("Genshin", giFrame);
+		imshow("Genshin A", lis[3]);
+		imshow("Genshin Out", lis[3].mul(lis[2]) / 255.0);
+		imshow("Genshin Gray", gray);
+#endif
+		waitKey(42);
 	}
 
-
-
-	circle(imgOri, p, 3, Scalar(255, 0, 0));
-	line(imgOri, p, Point(img.cols / 2, img.rows / 2), Scalar(0, 255, 0));
-	imshow("Img", imgOri);
-	p = p - Point(img.cols / 2, img.rows / 2);
-	const double rad2degScale = 180 / CV_PI;
-	res = atan2(-p.y, p.x)*rad2degScale;
-	res = res - 90; //从屏幕空间左侧水平线为0度转到竖直向上为0度
-	std::cout << res;
-
-
-	waitKey(0);
-    std::cout << "Hello World!\n";
+	return 0;
 }
-
-//let src = cv.imread("preview"');
-//	cv.cvtColor(src, src, cv.COLOR_RGB2HSV, e);
-//let hsv = new Cv.MatVector(;
-//cv.split(src， hsv);
-//let dst = new cv.Mat(); let mask = new cv.Mat(); let dtype = -1;
-//cv.subtract(hsv.get(1)， hsv.get(2), dst, mask，dtype); cv.bitwise_not(dst, dst)
-//cv.threshold(dst，dst，254，255, cv.THRESH_BINARY)cv.imshow(" output_canvas ", dst);
-//
-
-// 运行程序: Ctrl + F5 或调试 >“开始执行(不调试)”菜单
-// 调试程序: F5 或调试 >“开始调试”菜单
-
-// 入门使用技巧: 
-//   1. 使用解决方案资源管理器窗口添加/管理文件
-//   2. 使用团队资源管理器窗口连接到源代码管理
-//   3. 使用输出窗口查看生成输出和其他消息
-//   4. 使用错误列表窗口查看错误
-//   5. 转到“项目”>“添加新项”以创建新的代码文件，或转到“项目”>“添加现有项”以将现有代码文件添加到项目
-//   6. 将来，若要再次打开此项目，请转到“文件”>“打开”>“项目”并选择 .sln 文件
