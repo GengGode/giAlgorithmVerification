@@ -265,3 +265,5 @@ __pycache__/
 /pngResourceDll/001.png
 /pngResourceDll/002.png
 /OpencvConsole/img.png
+*.png
+*.psd
