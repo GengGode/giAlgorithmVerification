@@ -1,34 +1,44 @@
-#include "Cv.h"
+#pragma once
+#include <opencv2/opencv.hpp>
 
-Cv::Cv(QWidget *parent)
-    : QMainWindow(parent)
+cv::Mat create_square_mask(int mask_width, int mask_height, double gradient_width)
 {
-    ui.setupUi(this);
-	this->setWindowFlags(Qt::FramelessWindowHint);
-	this->setAttribute(Qt::WA_TranslucentBackground, true);
-	connect(ui.pushButton_2, &QPushButton::clicked, this, &Cv::a10);
-	connect(ui.pushButton_3, &QPushButton::clicked, this, &Cv::a20);
-	connect(ui.pushButton_4, &QPushButton::clicked, this, &Cv::a30);
-
-	MainMat = imread("C:/Users/GengG/source/repos/Cv≤‚ ‘/Cv≤‚ ‘/res/mat.png");
-}
-void Cv::paintEvent(QPaintEvent * event)
-{
-	//…Ë÷√ª≠√ÊŒ™µÿÕº
-	QPainter painter(this);
-	if (isE)
+	cv::Mat mask = cv::Mat::zeros(mask_height, mask_width, CV_8UC1);
+	cv::Point2d center(mask_width / 2, mask_height / 2);
+	double radius = mask_width / 2;
+	double gradient_radius = radius - gradient_width;
+	for (int i = 0; i < mask_height; i++)
 	{
-		painter.drawImage(0, 0, MainImg);
-
+		for (int j = 0; j < mask_width; j++)
+		{
+			double distance = cv::norm(center - cv::Point2d(j, i));
+			if (distance < gradient_radius)
+			{
+				mask.at<uchar>(i, j) = 255;
+			}
+			else if (distance < radius)
+			{
+				mask.at<uchar>(i, j) = 255 * (radius - distance) / gradient_width;
+			}
+		}
 	}
+	return mask;
 }
+
+
+using namespace cv;
+using namespace std;
 
 double dis2(double a, double b)
 {
 	return a * a + b * b;
 }
 
-Mat SharRectMat(Mat in,double r, int mode)
+Mat calMask(int col, int row, double r, int flag = 0);
+Mat calMask2(int col, int row, int r, double r0, int flag = 0);
+Mat calMask3(int col, int row, int r, double r0, int flag = 0);
+
+Mat SharRectMat(Mat in, double r, int mode)
 {
 	//Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
 	Rect roi;
@@ -50,7 +60,7 @@ Mat SharRectMat(Mat in,double r, int mode)
 			}
 			else if (dis > len - r)
 			{
-				ReRoi.at<uchar>(j, i) = 255.0 / (r)*(len - dis);
+				ReRoi.at<uchar>(j, i) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -60,23 +70,24 @@ Mat SharRectMat(Mat in,double r, int mode)
 	}
 	return in;
 }
-Mat Cv::calMask3(int col, int row, int r, double r0, int flag)
+
+Mat calMask3(int col, int row, int r, double r0, int flag)
 {
 	Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
 
-	int len = min(cvRound(col*0.5), cvRound(row*0.5));
+	int len = min(cvRound(col * 0.5), cvRound(row * 0.5));
 	for (int i = 0; i < col; i++)
 	{
 		for (int j = 0; j < row; j++)
 		{
-			double dis = sqrt(dis2(cvRound(col*0.5) - i, cvRound(row*0.5) - j));
+			double dis = sqrt(dis2(cvRound(col * 0.5) - i, cvRound(row * 0.5) - j));
 			if (dis > len)
 			{
 				out.at<uchar>(j, i) = 0;
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(j, i) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(j, i) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -87,7 +98,7 @@ Mat Cv::calMask3(int col, int row, int r, double r0, int flag)
 	return out;
 }
 
-Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
+Mat calMask2(int col, int row, int r, double r0, int flag)
 {
 	Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
 	Rect roi;
@@ -108,7 +119,7 @@ Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -130,7 +141,7 @@ Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -152,7 +163,7 @@ Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -174,7 +185,7 @@ Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -196,7 +207,7 @@ Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -219,7 +230,7 @@ Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -241,7 +252,7 @@ Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -263,7 +274,7 @@ Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -274,7 +285,7 @@ Mat Cv::calMask2(int col, int row, int r, double r0, int flag)
 	return out;
 }
 
-Mat Cv::calMask(int col, int row, double r, int flag)
+Mat calMask(int col, int row, double r, int flag)
 {
 	Mat out(row, col, CV_8UC1, Scalar(255, 255, 255));
 	Rect roi;
@@ -295,7 +306,7 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -317,7 +328,7 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -339,7 +350,7 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -348,7 +359,7 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 		}
 	}
 
-	roi = Rect(r, 0, row-r * 2, r);
+	roi = Rect(r, 0, row - r * 2, r);
 	len = min(roi.width, roi.height);
 	for (int i = roi.x; i < roi.x + roi.width; i++)
 	{
@@ -361,7 +372,7 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -370,7 +381,7 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 		}
 	}
 
-	roi = Rect(r, col - r, row - r * 2,  r);
+	roi = Rect(r, col - r, row - r * 2, r);
 	len = min(roi.width, roi.height);
 	for (int i = roi.x; i < roi.x + roi.width; i++)
 	{
@@ -383,7 +394,7 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -410,7 +421,7 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -419,7 +430,7 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 		}
 	}
 
-	roi = Rect(row-r, r, r, col - r * 2);
+	roi = Rect(row - r, r, r, col - r * 2);
 	len = min(roi.width, roi.height);
 	for (int i = roi.x; i < roi.x + roi.width; i++)
 	{
@@ -432,7 +443,7 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -441,20 +452,20 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 		}
 	}
 
-	roi = Rect(row-r, col - r, r, r);
+	roi = Rect(row - r, col - r, r, r);
 	len = min(roi.width, roi.height);
 	for (int i = roi.x; i < roi.x + roi.width; i++)
 	{
 		for (int j = roi.y; j < roi.y + roi.height; j++)
 		{
-			double dis = sqrt(dis2(roi.x + roi.width -r- i, roi.y + roi.height - r - j));
+			double dis = sqrt(dis2(roi.x + roi.width - r - i, roi.y + roi.height - r - j));
 			if (dis > len)
 			{
 				out.at<uchar>(i, j) = 0;
 			}
 			else if (dis > len - r)
 			{
-				out.at<uchar>(i, j) = 255.0 / (r)*(len - dis);
+				out.at<uchar>(i, j) = 255.0 / (r) * (len - dis);
 			}
 			else
 			{
@@ -466,9 +477,9 @@ Mat Cv::calMask(int col, int row, double r, int flag)
 }
 
 
-void Cv::a10()
+void a10()
 {
-	MainMat = imread("C:/Users/GengG/source/repos/Cv≤‚ ‘/Cv≤‚ ‘/res/mat.png");
+	auto MainMat = imread("C:/Users/GengG/source/repos/Cv≤‚ ‘/Cv≤‚ ‘/res/mat.png");
 
 	Mat MAINMASK = calMask(MainMat.cols, MainMat.rows, 20);
 
@@ -483,16 +494,16 @@ void Cv::a10()
 	split(MAINMASK, mv1);
 	mv0.push_back(mv1[0]);
 	merge(mv0, MainMat);
-	MainImg = QImage((uchar*)(MainMat.data), MainMat.cols, MainMat.rows, MainMat.cols*(MainMat.channels()), QImage::Format_ARGB32);
-	isE = true;
-	update();
+	//MainImg = QImage((uchar*)(MainMat.data), MainMat.cols, MainMat.rows, MainMat.cols * (MainMat.channels()), QImage::Format_ARGB32);
+	//isE = true;
+	//update();
 }
 
-void Cv::a20()
+void a20()
 {
-	MainMat = imread("C:/Users/GengG/source/repos/Cv≤‚ ‘/Cv≤‚ ‘/res/mat2.png");
+	auto MainMat = imread("C:/Users/GengG/source/repos/Cv≤‚ ‘/Cv≤‚ ‘/res/mat2.png");
 
-	Mat rotation0 = getRotationMatrix2D(Point2f(0,0), 0,1);//º∆À„∑≈…‰±‰ªªæÿ’Û
+	Mat rotation0 = getRotationMatrix2D(Point2f(0, 0), 0, 1);//º∆À„∑≈…‰±‰ªªæÿ’Û
 
 	double b[2][3] = { {1,0,110.5 },{0,1,10.3} };
 
@@ -513,14 +524,14 @@ void Cv::a20()
 	split(MAINMASK, mv1);
 	mv0.push_back(mv1[0]);
 	merge(mv0, MainMat);
-	MainImg = QImage((uchar*)(MainMat.data), MainMat.cols, MainMat.rows, MainMat.cols*(MainMat.channels()), QImage::Format_ARGB32);
-	isE = true;
-	update();
+	//MainImg = QImage((uchar*)(MainMat.data), MainMat.cols, MainMat.rows, MainMat.cols * (MainMat.channels()), QImage::Format_ARGB32);
+	//isE = true;
+	//update();
 }
 
-void Cv::a30()
+void a30()
 {
-	MainMat = imread("C:/Users/GengG/source/repos/Cv≤‚ ‘/Cv≤‚ ‘/res/mat.png");
+	auto MainMat = imread("C:/Users/GengG/source/repos/Cv≤‚ ‘/Cv≤‚ ‘/res/mat.png");
 
 	Mat MAINMASK = calMask3(MainMat.cols, MainMat.rows, 20, 3);
 
@@ -535,8 +546,7 @@ void Cv::a30()
 	split(MAINMASK, mv1);
 	mv0.push_back(mv1[0]);
 	merge(mv0, MainMat);
-	MainImg = QImage((uchar*)(MainMat.data), MainMat.cols, MainMat.rows, MainMat.cols*(MainMat.channels()), QImage::Format_ARGB32);
-	isE = true;
-	update();
+	//MainImg = QImage((uchar*)(MainMat.data), MainMat.cols, MainMat.rows, MainMat.cols * (MainMat.channels()), QImage::Format_ARGB32);
+	//isE = true;
+	//update();
 }
-

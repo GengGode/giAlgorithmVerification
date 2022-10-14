@@ -21,5 +21,58 @@
     <ClCompile Include="CodeTest.h">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="TrackTask.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="screen.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="TrackTask.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="screen.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="capture.interop.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="composition.interop.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dHelpers.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="direct3d11.interop.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="pch.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="ergodic_surf_param.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="hook_listen_key.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="create_square_mask.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gi_test_calc.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gi_test_diff_match.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gi_test.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gi_find_yun_tengxun.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
