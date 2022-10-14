@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.3.32901.215
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "OpencvConsole", "OpencvConsole\OpencvConsole.vcxproj", "{FC66A4C5-7241-4969-B9D8-5812061520E9}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "gi_algorithm_verification", "gi_algorithm_verification\gi_algorithm_verification.vcxproj", "{FC66A4C5-7241-4969-B9D8-5812061520E9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -15,16 +15,10 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="OpencvConsole.cpp">
+    <ClCompile Include="gi_algorithm_verification.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CodeTest.h">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="TrackTask.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="screen.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
