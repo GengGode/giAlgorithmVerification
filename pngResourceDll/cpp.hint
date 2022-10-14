@@ -1,2 +1,0 @@
-﻿#define PNGRESOURCEDLL_API __declspec(dllexport)
-#define PNGRESOURCEDLL_API __declspec(dllimport)
