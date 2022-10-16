@@ -19,7 +19,7 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="CodeTest.h">
-      <Filter>源文件</Filter>
+      <Filter>头文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -65,5 +65,11 @@
     <ClInclude Include="gi_find_yun_tengxun.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="gi_test_uneven_light.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
 </Project>

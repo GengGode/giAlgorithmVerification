@@ -1,5 +1,4 @@
 #pragma once
-
 #include <Windows.h>
 #include <iostream> 
 #include <format> 
@@ -74,7 +73,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 }
 
 
-int main1()
+int main_hook_listen_key()
 {
 	//return main_screen();
 

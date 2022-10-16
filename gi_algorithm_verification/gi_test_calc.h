@@ -207,9 +207,9 @@ void func_0()
 	//cv::Mat test_roi_mask;
 	//test_roi.copyTo(test_roi_mask, sum_mask_erode);
 
-	// 加载目标模板的图片 "C:\Users\GengG\source\repos\Cv测试\OpencvConsole\UI_MiniMap_MarkSouth.png"
-	cv::Mat N_template = cv::imread("C:/Users/GengG/source/repos/Cv测试/OpencvConsole/UI_MiniMap_MarkSouth.png", -1);
-	cv::Mat N2_template = cv::imread("C:/Users/GengG/source/repos/Cv测试/OpencvConsole/out.png", -1);
+	// 加载目标模板的图片 "C:\Users\GengG\source\repos\giAlgorithmVerification\gi_algorithm_verification\UI_MiniMap_MarkSouth.png"
+	cv::Mat N_template = cv::imread("C:/Users/GengG/source/repos/giAlgorithmVerification/gi_algorithm_verification/UI_MiniMap_MarkSouth.png", -1);
+	cv::Mat N2_template = cv::imread("C:/Users/GengG/source/repos/giAlgorithmVerification/gi_algorithm_verification/out.png", -1);
 	// 拆分模板图片，只要它的透明通道
 	std::vector<cv::Mat> N_template_channels;
 	cv::split(N_template, N_template_channels);
@@ -420,7 +420,7 @@ void func_2()
 	cv::imshow("Genshin Out", lis[3].mul(lis[2]) / 255.0);
 	cv::imshow("Genshin Gray", gray);
 }
-int main_test()
+int test_calc()
 {
 	giWindowName = L"\u539F\u795E";
 	giHandle = FindWindowW(L"UnityWndClass", giWindowName); /* 匹配名称：原神 */
@@ -431,7 +431,7 @@ int main_test()
 	giClientSize.width = static_cast<int>(screen_scale * (giClientRect.right - giClientRect.left));
 	giClientSize.height = static_cast<int>(screen_scale * (giClientRect.bottom - giClientRect.top));
 	
-#define b
+#define b0
 #ifdef b
 	while (getGengshinImpactScreen())
 	{

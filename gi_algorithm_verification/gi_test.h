@@ -20,11 +20,7 @@ public:
 	{
 		_now_time = GetTickCount64();
 		auto wait_time = 1000 / _frame_rate - (_now_time - _last_time);
-		if (wait_time > 0)
-		{
-			// std::cout << "wait_time:" << wait_time << std::endl;
-			Sleep(static_cast<DWORD>(wait_time));
-		}
+		if (wait_time > 0)Sleep(static_cast<DWORD>(wait_time));
 		_last_time = _now_time;
 	}
 };
@@ -124,10 +120,37 @@ void test(std::function<bool(const cv::Mat&)> func_test,int frame_rate = 30)
 	while (1)
 	{
 		auto frame = gi_frame();
-
-		auto res = func_test(frame);
-
+		if (frame.empty())
+		{
+			std::cout << "frame is empty" << std::endl;
+		}
+		else
+		{
+			auto res = func_test(frame);
+		}
 		// show_frame(frame);
 		lct.wait_time();
 	}
 }
+
+void test_local(std::function<bool(const cv::Mat&)> func_test,std::string path= "img.png", int frame_rate = 30)
+{
+	auto lct = LockCycleTime(frame_rate);
+	while (1)
+	{
+		auto frame = cv::imread(path, -1);
+		if (frame.empty())
+		{
+			std::cout << "frame is empty" << std::endl;
+		}
+		else
+		{
+			auto res = func_test(frame);
+		}
+		// show_frame(frame);
+		lct.wait_time();
+	}
+}
+
+#define GEN_FUNC(name) void test_##name(){test(func_test_##name,30);}
+#define GEN_FUNC_LOCAL(name) void test_##name(){test_local(func_test_##name);}

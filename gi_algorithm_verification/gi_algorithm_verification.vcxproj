@@ -180,9 +180,13 @@
     <ClInclude Include="hook_listen_key.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="screen.h" />
+    <ClInclude Include="gi_test_uneven_light.h" />
     <ClInclude Include="TrackTask.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="cpp.hint" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-   </Target>
+  </Target>
 </Project>
