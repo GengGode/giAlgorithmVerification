@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="文档">
+      <UniqueIdentifier>{af791176-2150-4d58-8ebc-c16077128acf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gi_algorithm_verification.cpp">
@@ -68,8 +71,17 @@
     <ClInclude Include="gi_test_uneven_light.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="gi_test_calc_angle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gi_test_data_fusion.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="doc\DataFusion.md">
+      <Filter>文档</Filter>
+    </None>
   </ItemGroup>
 </Project>

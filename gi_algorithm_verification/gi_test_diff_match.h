@@ -1,54 +1,42 @@
 #pragma once
 #include "gi_test.h"
 
-cv::Point2d calc_diff_pos(cv::Mat& now_minimap_mat64, cv::Mat& last_minimap_mat64)
+cv::Point2d calc_diff_pos(cv::Mat& now_minimap_mat_f64, cv::Mat& last_minimap_mat_f64)
 {
-	auto diff_pos = cv::phaseCorrelate(now_minimap_mat64, last_minimap_mat64);
+	auto diff_pos = cv::phaseCorrelate(now_minimap_mat_f64, last_minimap_mat_f64);
 	return diff_pos - cv::Point2d(0.5, 0.5);
 }
-cv::Point2d calc_diff_pos_match(cv::Mat& now_minimap_mat64, cv::Mat& last_minimap_mat64)
+cv::Point2d calc_diff_pos_match_surf(cv::Mat& now_minimap_mat_f64, cv::Mat& last_minimap_mat_f64)
 {
 	// SURF
-	cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create(400);
+	cv::Ptr<cv::xfeatures2d::SURF> surf = cv::xfeatures2d::SURF::create(1, 1, 1);
 	std::vector<cv::KeyPoint> keypoints_object, keypoints_scene;
 	cv::Mat descriptors_object, descriptors_scene;
-	surf->detectAndCompute(now_minimap_mat64, cv::noArray(), keypoints_object, descriptors_object);
-	surf->detectAndCompute(last_minimap_mat64, cv::noArray(), keypoints_scene, descriptors_scene);
-	// Matching descriptor vectors using FLANN matcher
-	cv::FlannBasedMatcher matcher;
-	std::vector< cv::DMatch > matches;
+	surf->detectAndCompute(now_minimap_mat_f64, cv::noArray(), keypoints_object, descriptors_object);
+	surf->detectAndCompute(last_minimap_mat_f64, cv::noArray(), keypoints_scene, descriptors_scene);
+	// Matching descriptor vectors using BFMatcher
+	cv::BFMatcher matcher;
+	std::vector<cv::DMatch> matches;
 	matcher.match(descriptors_object, descriptors_scene, matches);
-	double max_dist = 0; double min_dist = 100;
-	//-- Quick calculation of max and min distances between keypoints
-	for (int i = 0; i < descriptors_object.rows; i++)
-	{
-		double dist = matches[i].distance;
-		if (dist < min_dist) min_dist = dist;
-		if (dist > max_dist) max_dist = dist;
-	}
-	//-- Draw only "good" matches (i.e. whose distance is less than 3*min_dist )
-	std::vector< cv::DMatch > good_matches;
-	for (int i = 0; i < descriptors_object.rows; i++)
-	{
-		if (matches[i].distance < 3 * min_dist)
-		{
-			good_matches.push_back(matches[i]);
-		}
-	}
-	//-- Localize the object
+	// Draw matches
+	cv::Mat img_matches;
+	cv::drawMatches(now_minimap_mat_f64, keypoints_object, last_minimap_mat_f64, keypoints_scene, matches, img_matches);
+	// Show detected matches
+	cv::imshow("Good Matches & Object detection", img_matches);
+	// Localize the object
 	std::vector<cv::Point2f> obj;
 	std::vector<cv::Point2f> scene;
-	for (size_t i = 0; i < good_matches.size(); i++)
+	for (int i = 0; i < matches.size(); i++)
 	{
-		//-- Get the keypoints from the good matches
-		obj.push_back(keypoints_object[good_matches[i].queryIdx].pt);
-		scene.push_back(keypoints_scene[good_matches[i].trainIdx].pt);
+		// Get the keypoints from the good matches
+		obj.push_back(keypoints_object[matches[i].queryIdx].pt);
+		scene.push_back(keypoints_scene[matches[i].trainIdx].pt);
 	}
 	cv::Mat H = cv::findHomography(obj, scene, cv::RANSAC);
-	//-- Get the corners from the image_1 ( the object to be "detected" )
+	// Get the corners from the image_1 ( the object to be "detected" )
 	std::vector<cv::Point2f> obj_corners(4);
-	obj_corners[0] = cv::Point2f(0, 0); obj_corners[1] = cv::Point2f(now_minimap_mat64.cols, 0);
-	obj_corners[2] = cv::Point2f(now_minimap_mat64.cols, now_minimap_mat64.rows); obj_corners[3] = cv::Point2f(0, now_minimap_mat64.rows);
+	obj_corners[0] = cv::Point(0, 0); obj_corners[1] = cv::Point(now_minimap_mat_f64.cols, 0);
+	obj_corners[2] = cv::Point(now_minimap_mat_f64.cols, now_minimap_mat_f64.rows); obj_corners[3] = cv::Point(0, now_minimap_mat_f64.rows);
 	std::vector<cv::Point2f> scene_corners(4);
 	cv::perspectiveTransform(obj_corners, scene_corners, H);
 	//-- Draw lines between the corners (the mapped object in the scene - image_2 )
@@ -73,7 +61,8 @@ bool func_test_diff_match(const cv::Mat frame)
 	
 	cv::Mat now_minimap_mat = frame(cv::Rect(MiniMap_Rect_x, MiniMap_Rect_y, MiniMap_Rect_w, MiniMap_Rect_h));
 	// 去除中心半径为12的圆形区域
-	cv::circle(now_minimap_mat, cv::Point2d(MiniMap_Rect_w / 2, MiniMap_Rect_h / 2), 12, cv::Scalar(128,128,128,128), -1);
+	cv::circle(now_minimap_mat, cv::Point2d(MiniMap_Rect_w / 2, MiniMap_Rect_h / 2), 15, cv::Scalar(128, 128, 128, 128), -1);
+	cv::circle(now_minimap_mat, cv::Point2d(MiniMap_Rect_w / 2, MiniMap_Rect_h / 2), 87, cv::Scalar(128,128,128,128), 10);
 
 	if (last_minimap_mat.empty())
 	{
@@ -87,21 +76,24 @@ bool func_test_diff_match(const cv::Mat frame)
 		std::cout << "last_minimap_mat.size != now_minimap_mat.size" << std::endl;
 		return false;
 	}
-	cv::Mat now_minimap_mat64;
-	cv::Mat last_minimap_mat64;
-	cv::cvtColor(now_minimap_mat, now_minimap_mat64, cv::COLOR_RGBA2GRAY);
-	cv::cvtColor(last_minimap_mat, last_minimap_mat64, cv::COLOR_RGBA2GRAY);
+
+	cv::Mat  now_minimap_mat_gray;
+	cv::Mat last_minimap_mat_gray;
+	cv::cvtColor(now_minimap_mat, now_minimap_mat_gray, cv::COLOR_RGBA2GRAY);
+	cv::cvtColor(last_minimap_mat, last_minimap_mat_gray, cv::COLOR_RGBA2GRAY);
+	cv::Mat now_minimap_mat_f64;
+	cv::Mat last_minimap_mat_f64;
+	now_minimap_mat_gray.convertTo(now_minimap_mat_f64,   CV_64FC1);
+	last_minimap_mat_gray.convertTo(last_minimap_mat_f64, CV_64FC1);
 	
-	now_minimap_mat64.convertTo(now_minimap_mat64,   CV_64FC1);
-	last_minimap_mat64.convertTo(last_minimap_mat64, CV_64FC1);
-	
-	//auto diff_pos = cv::phaseCorrelate(now_minimap_mat64, last_minimap_mat64);
+	//auto diff_pos = cv::phaseCorrelate(now_minimap_mat_f64, last_minimap_mat_f64);
 	//diff_pos = diff_pos - cv::Point2d(0.5, 0.5);
-	// 
-	auto diff_pos = calc_diff_pos(now_minimap_mat64, last_minimap_mat64);
+	
+	//auto diff_pos = calc_diff_pos_match_surf(now_minimap_mat_gray, last_minimap_mat_gray);
+	auto diff_pos = calc_diff_pos(now_minimap_mat_f64, last_minimap_mat_f64);
 
 
-	//last_minimap_mat = now_minimap_mat.clone();
+	last_minimap_mat = now_minimap_mat.clone();
 
 	//if (diff_pos.x != 0 || diff_pos.y != 0)
 	//{
@@ -165,5 +157,5 @@ bool func_test_diff_match(const cv::Mat frame)
 //	test(func_test_diff_match,30);
 //}
 
-// GEN_FUNC(uneven_light)
-GEN_FUNC_LOCAL(diff_match)
+GEN_FUNC(diff_match)
+//GEN_FUNC_LOCAL(diff_match)

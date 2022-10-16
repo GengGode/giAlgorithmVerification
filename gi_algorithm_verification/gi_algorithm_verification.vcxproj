@@ -176,6 +176,8 @@
     <ClInclude Include="gi_find_yun_tengxun.h" />
     <ClInclude Include="gi_test.h" />
     <ClInclude Include="gi_test_calc.h" />
+    <ClInclude Include="gi_test_calc_angle.h" />
+    <ClInclude Include="gi_test_data_fusion.h" />
     <ClInclude Include="gi_test_diff_match.h" />
     <ClInclude Include="hook_listen_key.h" />
     <ClInclude Include="pch.h" />
@@ -185,6 +187,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
+    <None Include="doc\DataFusion.md" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
