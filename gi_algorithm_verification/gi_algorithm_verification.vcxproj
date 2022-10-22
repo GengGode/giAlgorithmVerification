@@ -167,6 +167,7 @@
     <ClCompile Include="gi_algorithm_verification.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="add_rgba_image.h" />
     <ClInclude Include="capture.interop.h" />
     <ClInclude Include="composition.interop.h" />
     <ClInclude Include="create_square_mask.h" />

@@ -11,12 +11,16 @@
 #include "gi_test_diff_match.h"
 #include "gi_test_uneven_light.h"
 #include "gi_test_calc_angle.h"
+#include "add_rgba_image.h"
+
 
 int main()
 {	
+	//main_hook_listen_key();
 	// test_calc();
 	//test_diff_match();
 	// test_uneven_light();
-	test_calc_angle();
+	//test_calc_angle();
+	test_add_rgba_image();
 	return 0;
 }

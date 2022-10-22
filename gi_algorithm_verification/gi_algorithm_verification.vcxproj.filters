@@ -77,6 +77,9 @@
     <ClInclude Include="gi_test_data_fusion.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="add_rgba_image.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />

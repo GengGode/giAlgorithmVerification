@@ -73,7 +73,7 @@ LRESULT CALLBACK MouseProc(int nCode, WPARAM wParam, LPARAM lParam)
 }
 
 
-int main_hook_listen_key()
+int main_hook_listen_key_1st()
 {
 	//return main_screen();
 
@@ -82,7 +82,7 @@ int main_hook_listen_key()
 	//cv::waitKey(0); 
 
 	HHOOK hhkLowLevelKybd = SetWindowsHookExA(WH_KEYBOARD_LL, KeyboardProc, 0, 0);
-	HHOOK hhkLowLevelMous = SetWindowsHookExA(WH_MOUSE_LL, MouseProc, 0, 0);
+	//HHOOK hhkLowLevelMous = SetWindowsHookExA(WH_MOUSE_LL, MouseProc, 0, 0);
 
 	MSG msg;
 	while (!GetMessage(&msg, NULL, NULL, NULL)) {
@@ -91,7 +91,75 @@ int main_hook_listen_key()
 	}
 
 	UnhookWindowsHookEx(hhkLowLevelKybd);
-	UnhookWindowsHookEx(hhkLowLevelMous);
+	//UnhookWindowsHookEx(hhkLowLevelMous);
 
 	return 0;
+}
+
+
+#include <functional>
+
+#include <Windows.h>
+
+template <typename T>
+struct Callback;
+template <typename Ret, typename... Params>
+struct Callback<Ret(Params...)>
+{
+	template <typename... Args>
+	static Ret callback(Args... args) {
+		return func(args...);
+	}
+	static std::function<Ret(Params...)> func;
+};
+template <typename Ret, typename... Params>
+std::function<Ret(Params...)> Callback<Ret(Params...)>::func;
+
+class Keyboard
+{
+public:
+	Keyboard();
+	~Keyboard();
+
+private:
+	LRESULT CALLBACK keyboardProc(int nCode, WPARAM wParam, LPARAM lParam);
+};
+
+Keyboard::Keyboard()
+{
+	typedef LRESULT(*callback_t)(int, WPARAM, LPARAM);
+
+	using namespace std::placeholders;
+	Callback<LRESULT(int, WPARAM, LPARAM)>::func = std::bind(&Keyboard::keyboardProc, this, _1, _2, _3);
+	callback_t func = static_cast<callback_t>(Callback<LRESULT(int, WPARAM, LPARAM)>::callback);
+	HHOOK hook{ SetWindowsHookEx(WH_KEYBOARD_LL, func, NULL, 0) };
+
+	MSG msg;
+	while (!GetMessage(&msg, NULL, NULL, NULL)) {
+		TranslateMessage(&msg);
+		DispatchMessage(&msg);
+	}
+
+	UnhookWindowsHookEx(hook);
+}
+
+Keyboard::~Keyboard()
+{
+}
+
+LRESULT CALLBACK Keyboard::keyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	std::cout << std::format("callback!!!!\n");
+	return 0;
+}
+
+int main_hook_listen_key_2nd()
+{
+	Keyboard k;
+
+	return 0;
+}
+int main_hook_listen_key()
+{
+	return main_hook_listen_key_2nd();
 }
