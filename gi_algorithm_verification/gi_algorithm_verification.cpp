@@ -12,15 +12,19 @@
 #include "gi_test_uneven_light.h"
 #include "gi_test_calc_angle.h"
 #include "add_rgba_image.h"
-
+#include "gi.test.ocr.h"
 
 int main()
 {	
+	system("chcp 65001");
 	//main_hook_listen_key();
-	// test_calc();
+	// 
+	 //test_calc();
 	//test_diff_match();
 	// test_uneven_light();
 	//test_calc_angle();
-	test_add_rgba_image();
+	//test_add_rgba_image();
+
+	test_picking_ocr();
 	return 0;
 }

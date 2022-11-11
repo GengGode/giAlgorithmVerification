@@ -16,6 +16,9 @@
     <Filter Include="文档">
       <UniqueIdentifier>{af791176-2150-4d58-8ebc-c16077128acf}</UniqueIdentifier>
     </Filter>
+    <Filter Include="3rdparty">
+      <UniqueIdentifier>{0af881a4-c760-4041-8edb-64b7d8d9f785}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="gi_algorithm_verification.cpp">
@@ -30,18 +33,6 @@
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="screen.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="capture.interop.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="composition.interop.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="d3dHelpers.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="direct3d11.interop.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="pch.h">
@@ -79,6 +70,21 @@
     </ClInclude>
     <ClInclude Include="add_rgba_image.h">
       <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="gi.test.ocr.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="capture.interop.h">
+      <Filter>3rdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="composition.interop.h">
+      <Filter>3rdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="d3dHelpers.h">
+      <Filter>3rdparty</Filter>
+    </ClInclude>
+    <ClInclude Include="direct3d11.interop.h">
+      <Filter>3rdparty</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

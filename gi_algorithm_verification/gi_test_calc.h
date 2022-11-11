@@ -475,7 +475,12 @@ int test_calc()
 #else
 	while (1)
 	{
-		giFrame = imread("img.png", -1);
+		//giFrame = imread("img.png", -1);
+		if (giFrame.empty())
+		{
+			waitKey(100);
+			continue;
+		}
 
 #endif
 		func_0();
