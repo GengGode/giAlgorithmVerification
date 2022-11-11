@@ -1,0 +1,3 @@
+[submodule "gi_algorithm_verification/3rdparty/libocr"]
+	path = gi_algorithm_verification/3rdparty/libocr
+	url = https://github.com/GengGode/libocr.git

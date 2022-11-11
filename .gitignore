@@ -253,6 +253,9 @@ paket-files/
 .idea/
 *.sln.iml
 
+# Submodule
+/gi_algorithm_verification/3rdparty/libocr
+
 # CodeRush
 .cr/
 
@@ -267,3 +270,4 @@ __pycache__/
 /OpencvConsole/img.png
 *.png
 *.psd
+
